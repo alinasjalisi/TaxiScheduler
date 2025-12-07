@@ -62,6 +62,10 @@ class Environment:
         self.request_rate = request_rate
         self.cancellation_prob = cancellation_prob
         self.request_counter = 0  # to generate unique request IDs
+
+        self.last_completed_rides = []
+        self.last_cancelled_requests = []
+        self.last_picked_up_requests = []
         
     def create_initial_state(self) -> State:
        # initial state w random positions
@@ -89,7 +93,16 @@ class Environment:
         self._update_traffic(new_state)
         
         new_state.time += 1
-        
+    
+        # track info for metrics
+        self._last_step_info = {
+            "completed_rides": self.last_completed_rides,
+            "cancelled_requests": self.last_cancelled_requests,
+            "picked_up_requests": self.last_picked_up_requests,
+            "moving_taxis": [taxi.id for taxi in new_state.taxis if taxi.status != "idle"],
+            "idle_taxis": [taxi.id for taxi in new_state.taxis if taxi.status == "idle"]
+        }
+    
         return new_state
     
     def _copy_state(self, state: State) -> State:
@@ -175,17 +188,28 @@ class Environment:
     
     def _generate_new_requests(self, state: State):
 
-        num_new_requests = np.random.poisson(self.request_rate)
+        # add time-of-day demand pattern
+        hour_of_day = (state.time % 288) / 12.0
+        
+        if (7 <= hour_of_day < 9) or (17 <= hour_of_day < 19):
+            demand_multiplier = 2.0  # rush hours
+        elif (hour_of_day >= 23) or (hour_of_day < 5):
+            demand_multiplier = 0.5  # late night
+        else:
+            demand_multiplier = 1.0
+        
+        effective_rate = self.request_rate * demand_multiplier
+        num_new_requests = np.random.poisson(effective_rate)
 
         for _ in range(num_new_requests):
             origin = (random.randint(0, self.grid_size - 1),
-                     random.randint(0, self.grid_size - 1))
+                    random.randint(0, self.grid_size - 1))
             destination = (random.randint(0, self.grid_size - 1),
-                          random.randint(0, self.grid_size - 1))
+                        random.randint(0, self.grid_size - 1))
             
             while origin == destination:
                 destination = (random.randint(0, self.grid_size - 1),
-                             random.randint(0, self.grid_size - 1))
+                            random.randint(0, self.grid_size - 1))
             
             new_request = Request(
                 request_id=self.request_counter,
@@ -201,18 +225,30 @@ class Environment:
         for request in state.requests:
             request.waiting_time += 1
             
-            # stochastic cancellation
-            if random.random() < self.cancellation_prob:
+            # cancellation increases with wait time
+            cancel_prob = self.cancellation_prob + (request.waiting_time * 0.01)
+            cancel_prob = min(cancel_prob, 0.5)
+            
+            if random.random() < cancel_prob:
                 request.is_cancelled = True
-        
+                self.last_cancelled_requests.append(request.id)
+    
         state.requests = [r for r in state.requests if not r.is_cancelled]
     
     def _update_traffic(self, state: State):
 
-        # traffic evolves as random walk between 0.8 and 1.5
-        change = random.uniform(-0.1, 0.1)
-        state.traffic_level = max(0.8, min(1.5, state.traffic_level + change))
+        hour_of_day = (state.time % 288) / 12.0
     
+        if (7 <= hour_of_day < 9) or (17 <= hour_of_day < 19):
+            base_traffic = 1.5  # rush hours
+        elif (hour_of_day >= 23) or (hour_of_day < 5):
+            base_traffic = 0.8  # late night
+        else:
+            base_traffic = 1.0
+        
+        change = random.uniform(-0.1, 0.1)
+        state.traffic_level = max(0.8, min(2.0, base_traffic + change))
+
     def _manhattan_distance(self, pos1: Tuple[int, int], 
                            pos2: Tuple[int, int]) -> int:
         
@@ -272,3 +308,22 @@ class Environment:
                 })
         
         return observation
+
+    def get_last_step_info(self) -> dict:
+        # info from last step for metrics
+        return getattr(self, '_last_step_info', {
+            "completed_rides": [],
+            "cancelled_requests": [],
+            "picked_up_requests": [],
+            "moving_taxis": [],
+            "idle_taxis": []
+        })
+
+    def get_reward(self, state: State) -> float:
+        # reward calculation for MCTS
+        reward = 0.0
+        reward += 10.0 * len(self.last_completed_rides)
+        reward -= 0.5 * sum(req.waiting_time for req in state.requests)
+        reward -= 5.0 * len(self.last_cancelled_requests)
+        reward -= 0.1 * sum(1 for taxi in state.taxis if taxi.status == "idle")
+        return reward
