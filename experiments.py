@@ -71,9 +71,9 @@ def runEpisode(env, policy, maxSteps, rewardCfg):
         while i < len(state.taxis):
             oldTaxi = state.taxis[i]
             newTaxi = nextState.taxis[i]
-            if oldTaxi.status == "occupued" and newTaxi.status == "idle":
+            if oldTaxi.status == "occupied" and newTaxi.status == "idle":
                 if oldTaxi.assigned_request is not None:
-                    completedIDs.append(oldTaxi.assignedRequest.id)
+                    completedIDs.append(oldTaxi.assigned_request.id)
             i = i + 1
             
         idleTaxis = []
