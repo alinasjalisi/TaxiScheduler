@@ -41,6 +41,7 @@ def runEpisode(env, policy, maxSteps, rewardCfg):
             i = i + 1
             
         removedIDs = []
+        i = 0
         while i < len(beforeIDs):
             rID = beforeIDs[i]
             if rID not in afterIDs:
@@ -99,7 +100,7 @@ def runEpisode(env, policy, maxSteps, rewardCfg):
         hist.noteCancellations(nextState.time, cancelledIDs)
         hist.noteIdleTaxis(nextState.time, idleTaxis)
         
-        info = {"completed_rides" : completedIDs, "cancelled_requests" : cancelledIDs, "idleTaxis" : idleTaxis, "movingTaxis" : movingTaxis}
+        info = {"completed_rides" : completedIDs, "cancelled_requests" : cancelledIDs, "idle_taxis" : idleTaxis, "moving_taxis" : movingTaxis}
         
         stepReward = computeStepReward(state, actions, nextState, info, rewardCfg)
         hist.totalRevenue = hist.totalRevenue + stepReward

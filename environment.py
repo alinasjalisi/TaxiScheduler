@@ -76,6 +76,10 @@ class Environment:
     def step(self, state, actions):
        # returns next state after applying stochastic transitions & actions
 
+        self.last_completed_rides = []
+        self.last_cancelled_requests = []
+        self.last_picked_up_requests = []
+
         new_state = self._copy_state(state)
         
         self._process_taxi_actions(new_state, actions)
@@ -164,15 +168,27 @@ class Environment:
                     taxi.remaining_travel_time = self._manhattan_distance(
                         taxi.position, taxi.destination
                     )
+                    
+                    
+                    self.last_picked_up_requests.append(taxi.assigned_request.id)
+                    
                     state.requests = [r for r in state.requests 
                                      if r.id != taxi.assigned_request.id]
                     
                 elif taxi.status == "occupied":
+                    completed_id = None
+                    
+                    if taxi.assigned_request is not None:
+                        completed_id = taxi.assigned_request.id
+                    
                     taxi.position = taxi.destination
                     taxi.status = "idle"
                     taxi.assigned_request = None
                     taxi.destination = None
                     taxi.remaining_travel_time = 0
+                    
+                    if completed_id is not None:
+                        self.last_completed_rides.append(completed_id)
             else:
                 # move taxi one step to destination
                 taxi.position = self._move_toward(taxi.position, taxi.destination)

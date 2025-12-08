@@ -29,10 +29,11 @@ def computeStepReward(state, action, nextState, info, config):
         
     moving = info.get("moving_taxis", [])
     countMoving = 0
+    i = 0
     while i < len(moving):
         countMoving = countMoving + 1
         i = i + 1     
-    reward -= config.travelCostPerStep * countMoving
+    reward = reward - config.travelCostPerStep * countMoving
         
     numberWaiting = len(nextState.requests)
     reward = reward + config.waitPenaltyPerStep * numberWaiting
@@ -47,6 +48,7 @@ def computeStepReward(state, action, nextState, info, config):
         
     idle = info.get("idle_taxis", [])
     countIdle = 0
+    i = 0
     while i < len(idle):
         countIdle = countIdle + 1
         i = i + 1     

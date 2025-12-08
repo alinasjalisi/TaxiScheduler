@@ -64,8 +64,8 @@ class EpisodeHistory:
             rID = cancelledIDs[i]
             if rID in self.events:
                 event = self.events[rID]
-                if event.dropoffTime is None:
-                    event.dropoffTime = t
+                if event.cancelledTime is None:
+                    event.cancelledTime = t
             i = i + 1 
 
     def noteIdleTaxis(self, t, idleTaxiIDs):
