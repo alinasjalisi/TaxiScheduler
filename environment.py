@@ -63,7 +63,7 @@ class Environment:
         self.last_cancelled_requests = []
         self.last_picked_up_requests = []
         
-    def create_initial_state(self) -> State:
+    def create_initial_state(self):
        # initial state w random positions
         taxis = []
         for i in range(self.num_taxis):
@@ -101,7 +101,7 @@ class Environment:
     
         return new_state
     
-    def _copy_state(self, state: State) -> State:
+    def _copy_state(self, state):
         
         new_taxis = []
         for taxi in state.taxis:
