@@ -51,6 +51,6 @@ def computeStepReward(state, action, nextState, info, config):
     while i < len(idle):
         countIdle = countIdle + 1
         i = i + 1     
-    reward -= config.idlePenaltyPerStop * countIdle     
+    reward -= config.idlePenaltyPerStep * countIdle     
     
     return reward
