@@ -28,7 +28,7 @@ class EpisodeHistory:
             r = newRequests[i]
             rID = r.id
             if rID not in self.events:
-                self.events[rID] = RequestEvent(rID, r.arrivalTime)
+                self.events[rID] = RequestEvent(rID, r.arrival_time)
             i = i + 1
         
     def notePickups(self, t, pickedUpIDs):
