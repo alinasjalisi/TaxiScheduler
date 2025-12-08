@@ -5,8 +5,6 @@ Created on Thu Nov 20 18:04:16 2025
 @author: Rachel
 """
 
-# Basic idea, but depending on env, tweak this
-
 class RewardConfiguration:
     # CHANGE THESE!!
     def __init__(self):
@@ -27,7 +25,7 @@ def computeStepReward(state, action, nextState, info, config):
     while i < len(completed):
         countCompleted = countCompleted + 1
         i = i + 1
-    reward += config.profitPerRide * countCompleted
+    reward = reward + config.profitPerRide * countCompleted
         
     moving = info.get("moving_taxis", [])
     countMoving = 0
@@ -37,7 +35,7 @@ def computeStepReward(state, action, nextState, info, config):
     reward -= config.travelCostPerStep * countMoving
         
     numberWaiting = len(nextState.requests)
-    reward -= config.waitPenaltyPerStep * countMoving
+    reward = reward + config.waitPenaltyPerStep * numberWaiting
 
     cancelled = info.get("cancelled_requests", [])
     countCancelled = 0
@@ -45,12 +43,13 @@ def computeStepReward(state, action, nextState, info, config):
     while i < len(cancelled):
         countCancelled = countCancelled + 1
         i = i + 1
+    reward = reward - config.cancelPenalty * countCancelled
         
     idle = info.get("idle_taxis", [])
     countIdle = 0
     while i < len(idle):
         countIdle = countIdle + 1
         i = i + 1     
-    reward -= config.idlePenaltyPerStep * countIdle     
+    reward = reward - config.idlePenaltyPerStep * countIdle     
     
     return reward
