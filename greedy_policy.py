@@ -44,7 +44,7 @@ class GreedyPolicy:
         while a < n:
             b = 0
             while b < n-1:
-                if requests[b].waitingTime < requests[b + 1].waitingTime:                
+                if requests[b].waiting_time < requests[b + 1].waiting_time:                
                     temp = requests[b]
                     requests[b] = requests[b + 1]
                     requests[b + 1] = temp
