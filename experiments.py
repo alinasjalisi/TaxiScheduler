@@ -9,7 +9,7 @@ from metrics import EpisodeHistory, summarizedMetrics
 from reward import computeStepReward, RewardConfiguration
 
 def runEpisode(env, policy, maxSteps, rewardCfg):
-    state = env.createInitialState()
+    state = env.create_initial_state()
     hist = EpisodeHistory()
     
     knownRequestIDs = {}
@@ -51,8 +51,8 @@ def runEpisode(env, policy, maxSteps, rewardCfg):
         i = 0
         while i < len(nextState.taxis):
             taxi = nextState.taxis[i]
-            if taxi.assignedRequest is not None:
-                assignedIDsNext.append(taxi.assignedRequest.id)
+            if taxi.assigned_request is not None:
+                assignedIDsNext.append(taxi.assigned_request.id)
             i = i + 1
      
         pickedUpIDs = []
@@ -72,7 +72,7 @@ def runEpisode(env, policy, maxSteps, rewardCfg):
             oldTaxi = state.taxis[i]
             newTaxi = nextState.taxis[i]
             if oldTaxi.status == "occupued" and newTaxi.status == "idle":
-                if oldTaxi.assignedRequest is not None:
+                if oldTaxi.assigned_request is not None:
                     completedIDs.append(oldTaxi.assignedRequest.id)
             i = i + 1
             
@@ -93,16 +93,16 @@ def runEpisode(env, policy, maxSteps, rewardCfg):
                 movingTaxis.append(oldTaxi.id)
             i = i + 1
             
-        hist.note_new_requests(newRequests)
-        hist.note_pickups(nextState.time, pickedUpIDs)
-        hist.note_dropoffs(nextState.time, completedIDs)
-        hist.note_cancellations(nextState.time, cancelledIDs)
-        hist.note_idle_taxis(idleTaxis)
+        hist.noteNewRequests(newRequests)
+        hist.notePickups(nextState.time, pickedUpIDs)
+        hist.noteDropoffs(nextState.time, completedIDs)
+        hist.noteCancellations(nextState.time, cancelledIDs)
+        hist.noteIdleTaxis(nextState.time, idleTaxis)
         
         info = {"completed_rides" : completedIDs, "cancelled_requests" : cancelledIDs, "idleTaxis" : idleTaxis, "movingTaxis" : movingTaxis}
         
         stepReward = computeStepReward(state, actions, nextState, info, rewardCfg)
-        hist.total_revenue = hist.total_revenue + stepReward
+        hist.totalRevenue = hist.totalRevenue + stepReward
         
         state = nextState
         stepIndex = stepIndex + 1
