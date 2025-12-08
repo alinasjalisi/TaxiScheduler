@@ -5,20 +5,20 @@ Created on Wed Dec  3 21:08:58 2025
 @author: Rachel
 """
 from environment import Environment
-from greedy_policy import GreedyPolicy, GreedyConfig
-from experiments import run_many
+from greedy_policy import GreedyPolicy, GreedyConfiguration
+from experiments import runMany
 
 def buildEnv():
-    return Environment(gridSize = 10, numTaxis = 3, requestRate = 0.5)
+    return Environment(grid_size = 10, num_taxis = 3, request_rate = 0.5)
 
 def buildPolicy(env):
-    cfg = GreedyConfig()
+    cfg = GreedyConfiguration()
     return GreedyPolicy(cfg, env)
 
 episodes = 5
 maxSteps = 50
 
-results = run_many(buildEnv, buildPolicy, episodes, maxSteps)
+results = runMany(buildEnv, buildPolicy, episodes, maxSteps)
 print("Greedy policy results over " + str(episodes) + " episodes:")
 i = 0
 while i < len(results):
