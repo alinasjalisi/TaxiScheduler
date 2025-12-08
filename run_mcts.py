@@ -88,9 +88,4 @@ def run_experiment(num_episodes=20, horizon=100, mcts_iterations=100):
     plt.show()
 
 
-if __name__ == "__main__":
-    run_experiment(
-        num_episodes=5,      
-        horizon=50,         
-        mcts_iterations=50   
-    ) #changed for quicker runs, amend as needed
+run_experiment(num_episodes=5, horizon=50, mcts_iterations=50) #changed for quicker runs, amend as needed
