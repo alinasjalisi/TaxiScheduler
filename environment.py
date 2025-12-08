@@ -2,10 +2,9 @@
 import random
 import copy
 import numpy as np
-from typing import List, Tuple, Optional
 
 class Taxi:
-    def __init__(self, taxi_id: int, position: Tuple[int, int]):
+    def __init__(self, taxi_id, position):
         self.id = taxi_id
         self.position = position  # (x, y) coordinates on grid
         self.status = "idle"  
@@ -18,8 +17,7 @@ class Taxi:
 
 class Request:
 
-    def __init__(self, request_id: int, origin: Tuple[int, int], 
-                 destination: Tuple[int, int], arrival_time: int):
+    def __init__(self, request_id, origin, destination, arrival_time):
         self.id = request_id
         self.origin = origin  # pickup location (x, y)
         self.destination = destination  
@@ -32,8 +30,7 @@ class Request:
 
 class State:
    
-    def __init__(self, taxis: List[Taxi], requests: List[Request], 
-                 time: int, traffic_level: float = 1.0):
+    def __init__(self, taxis, requests, time, traffic_level = 1.0):
         self.taxis = taxis 
         self.requests = requests  # active reqs*
         self.time = time  
@@ -44,7 +41,7 @@ class State:
 
 class Action:
    
-    def __init__(self, taxi_id: int, action_type: str, target=None):
+    def __init__(self, taxi_id, action_type, target=None):
         self.taxi_id = taxi_id
         self.action_type = action_type  
         self.target = target  
@@ -54,8 +51,7 @@ class Action:
 
 class Environment:
     # simulates autonomous taxi dispatch system
-    def __init__(self, grid_size: int = 10, num_taxis: int = 3, 
-                 request_rate: float = 0.3, cancellation_prob: float = 0.05):
+    def __init__(self, grid_size = 10, num_taxis = 3, request_rate = 0.3, cancellation_prob = 0.05):
        
         self.grid_size = grid_size
         self.num_taxis = num_taxis
@@ -77,7 +73,7 @@ class Environment:
         
         return State(taxis=taxis, requests=[], time=0)
     
-    def step(self, state: State, actions: List[Action]) -> State:
+    def step(self, state, actions):
        # returns next state after applying stochastic transitions & actions
 
         new_state = self._copy_state(state)
@@ -125,7 +121,7 @@ class Environment:
         
         return State(new_taxis, new_requests, state.time, state.traffic_level)
     
-    def _process_taxi_actions(self, state: State, actions: List[Action]):
+    def _process_taxi_actions(self, state, actions):
 
         for action in actions:
             taxi = state.taxis[action.taxi_id]
@@ -153,7 +149,7 @@ class Environment:
             elif action.action_type == "idle":
                 pass
     
-    def _update_taxi_positions(self, state: State):
+    def _update_taxi_positions(self, state):
     
         for taxi in state.taxis:
             if taxi.status == "idle":
@@ -186,7 +182,7 @@ class Environment:
                 if random.random() < state.traffic_level * 0.1:
                     taxi.remaining_travel_time += 1  # Traffic delay
     
-    def _generate_new_requests(self, state: State):
+    def _generate_new_requests(self, state):
 
         # add time-of-day demand pattern
         hour_of_day = (state.time % 288) / 12.0
@@ -220,7 +216,7 @@ class Environment:
             self.request_counter += 1
             state.requests.append(new_request)
     
-    def _update_requests(self, state: State):
+    def _update_requests(self, state):
     
         for request in state.requests:
             request.waiting_time += 1
@@ -235,7 +231,7 @@ class Environment:
     
         state.requests = [r for r in state.requests if not r.is_cancelled]
     
-    def _update_traffic(self, state: State):
+    def _update_traffic(self, state):
 
         hour_of_day = (state.time % 288) / 12.0
     
@@ -249,13 +245,11 @@ class Environment:
         change = random.uniform(-0.1, 0.1)
         state.traffic_level = max(0.8, min(2.0, base_traffic + change))
 
-    def _manhattan_distance(self, pos1: Tuple[int, int], 
-                           pos2: Tuple[int, int]) -> int:
+    def _manhattan_distance(self, pos1, pos2):
         
         return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
     
-    def _move_toward(self, current: Tuple[int, int], 
-                    target: Tuple[int, int]) -> Tuple[int, int]:
+    def _move_toward(self, current, target):
         
         x, y = current
         tx, ty = target
@@ -272,7 +266,7 @@ class Environment:
         else:
             return current
     
-    def get_observation(self, state: State) -> dict:
+    def get_observation(self, state):
        # simulates noisy observations of the state
         observation = {
             'time': state.time,
@@ -309,7 +303,7 @@ class Environment:
         
         return observation
 
-    def get_last_step_info(self) -> dict:
+    def get_last_step_info(self):
         # info from last step for metrics
         return getattr(self, '_last_step_info', {
             "completed_rides": [],
@@ -319,7 +313,7 @@ class Environment:
             "idle_taxis": []
         })
 
-    def get_reward(self, state: State) -> float:
+    def get_reward(self, state):
         # reward calculation for MCTS
         reward = 0.0
         reward += 10.0 * len(self.last_completed_rides)
