@@ -14,7 +14,7 @@ class MCTSNode:
         self.visits = 0
         self.value = 0.0
 
-def ucb_score(parent, child, c=1.4):
+def ucb_score(parent, child, c=2.0):
     if child.visits == 0:
         return float('inf')
     exploit = child.value / child.visits
@@ -22,7 +22,7 @@ def ucb_score(parent, child, c=1.4):
     return exploit + explore
 
 
-def get_legal_actions(state):
+def get_legal_actions(state, max_distance=5):
     actions = []
 
     idle_all = [Action(taxi.id, "idle") for taxi in state.taxis]
@@ -30,12 +30,20 @@ def get_legal_actions(state):
 
     idle_taxis = [t for t in state.taxis if t.status == "idle"]
 
-    # create actions for assigning each idle taxi to each request
     for taxi in idle_taxis:
         for req in state.requests:
-            joint = [Action(t.id, "idle") for t in state.taxis]
-            joint[taxi.id] = Action(taxi.id, "assign", target=req)
-            actions.append(joint)
+            # unpack positions
+            taxi_x, taxi_y = taxi.position
+            pickup_x, pickup_y = req.origin  
+            
+            # manhattan distance
+            distance = abs(taxi_x - pickup_x) + abs(taxi_y - pickup_y)
+            
+            # only create action if taxi is close enough
+            if distance <= max_distance:
+                joint = [Action(t.id, "idle") for t in state.taxis]
+                joint[taxi.id] = Action(taxi.id, "assign", target=req)
+                actions.append(joint)
 
     return actions
 
@@ -48,24 +56,28 @@ def select(node):
 
 
 def expand(node, env):
+    if not hasattr(node, 'untried_actions'):
+        node.untried_actions = get_legal_actions(node.state, max_distance=5)
 
-    actions = get_legal_actions(node.state)
+    if not node.untried_actions:
+        return None
+    
+    # expand one action at a time
+    action = node.untried_actions.pop()
+    next_state = env.step(node.state, action)
+    child = MCTSNode(next_state, parent=node, action=action)
+    node.children.append(child)
+    
+    return [child] 
 
-    for action in actions:
-        next_state = env.step(node.state, action)
-        child = MCTSNode(next_state, parent=node, action=action)
-        node.children.append(child)
 
-    return node.children
-
-
-def rollout(state, env, depth=10):
+def rollout(state, env, depth=15):
   
     total_reward = 0.0
     current_state = state
 
     for _ in range(depth):
-        actions = get_legal_actions(current_state)
+        actions = get_legal_actions(current_state, max_distance=5)
         if not actions:
             break
         action = random.choice(actions)
@@ -90,35 +102,24 @@ def mcts_policy(state, env, iterations=100):
 
     for _ in range(iterations):
         # selection: find leaf node
-        leaf = select(root)
+        node = select(root)
 
-        # rollout if leaf is unvisited
-        if leaf.visits == 0:
-            reward = rollout(leaf.state, env)
-            backpropagate(leaf, reward)
-            continue
-
-        # create children for all legal actions
-        children = expand(leaf, env)
-        if not children:
-            # backprop reward if no children
-            reward = env.get_reward(leaf.state)
-            backpropagate(leaf, reward)
-            continue
+        if node.visits > 0:
+            children = expand(node, env)
+            if children:
+                    node = children[0] 
+        #simulation: rollout from current node
+        reward = rollout(node.state, env, depth=15)
         
-        # rollout from random child
-        child = random.choice(children)
-        reward = rollout(child.state, env)
-        
-       # backprop to update ancesotors
-        backpropagate(child, reward)
+        # update ancestors
+        backpropagate(node, reward)
 
+    # select best action
     if not root.children:
         return [Action(taxi.id, "idle") for taxi in state.taxis]
     
-    best = max(root.children, key=lambda c: c.visits)
+    best = max(root.children, key=lambda c: c.value / c.visits if c.visits > 0 else  0)
     return best.action
-
 
 class MCTSPolicy:
     def __init__(self, env, iterations=100):
