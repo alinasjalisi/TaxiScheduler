@@ -2,6 +2,8 @@
 import random
 import copy
 import numpy as np
+from reward import RewardConfiguration
+
 
 class Taxi:
     def __init__(self, taxi_id, position):
@@ -331,9 +333,17 @@ class Environment:
 
     def get_reward(self, state):
         # reward calculation for MCTS
+        cfg = RewardConfiguration()
+        info = getattr(self, "_last_step_info", {
+            "completed_rides": [],
+            "cancelled_requests": [],
+            "moving_taxis": [],
+            "idle_taxis": []
+            })
         reward = 0.0
-        reward += 10.0 * len(self.last_completed_rides)
-        reward -= 0.5 * sum(req.waiting_time for req in state.requests)
-        reward -= 5.0 * len(self.last_cancelled_requests)
-        reward -= 0.1 * sum(1 for taxi in state.taxis if taxi.status == "idle")
+        reward += cfg.profitPerRide * len(info["completed_rides"])
+        reward -= cfg.waitPenaltyPerStep * sum(req.waiting_time for req in state.requests)
+        reward -= cfg.cancelPenalty * len(info["cancelled_requests"])
+        reward -= cfg.travelCostPerStep * len(info["moving_taxis"])
+        reward -= cfg.idlePenaltyPerStep * len(info["idle_taxis"])
         return reward

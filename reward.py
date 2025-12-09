@@ -5,14 +5,23 @@ Created on Thu Nov 20 18:04:16 2025
 @author: Rachel
 """
 
+from settings import (
+    PROFIT_PER_RIDE,
+    TRAVEL_COST_PER_STEP,
+    WAIT_PENALTY_PER_STEP,
+    IDLE_PENALTY_PER_STEP,
+    CANCEL_PENALTY,
+)
+
+
 class RewardConfiguration:
     # CHANGE THESE!!
     def __init__(self):
-        self.profitPerRide = 10.0
-        self.travelCostPerStep = 0.1
-        self.waitPenaltyPerStep = 2.0
-        self.idlePenaltyPerStep = 0.02
-        self.cancelPenalty = 5.0
+        self.profitPerRide = PROFIT_PER_RIDE
+        self.travelCostPerStep = TRAVEL_COST_PER_STEP
+        self.waitPenaltyPerStep = WAIT_PENALTY_PER_STEP
+        self.idlePenaltyPerStep = IDLE_PENALTY_PER_STEP
+        self.cancelPenalty = CANCEL_PENALTY
         
 def computeStepReward(state, action, nextState, info, config):
     if info is None:
@@ -36,7 +45,7 @@ def computeStepReward(state, action, nextState, info, config):
     reward = reward - config.travelCostPerStep * countMoving
         
     numberWaiting = len(nextState.requests)
-    reward = reward + config.waitPenaltyPerStep * numberWaiting
+    reward = reward - config.waitPenaltyPerStep * numberWaiting
 
     cancelled = info.get("cancelled_requests", [])
     countCancelled = 0
