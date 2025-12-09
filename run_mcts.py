@@ -1,5 +1,3 @@
-# run_mcts.py
-
 import numpy as np
 import matplotlib.pyplot as plt
 from environment import Environment
@@ -7,6 +5,16 @@ from reward import RewardConfiguration, computeStepReward
 from greedy_policy import GreedyPolicy, GreedyConfiguration
 from mcts_policy import MCTSPolicy
 from metrics import EpisodeHistory, summarizedMetrics
+
+from settings import (
+    GRID_SIZE,
+    NUM_TAXIS,
+    REQUEST_RATE,
+    CANCELLATION_PROB,
+    EPISODES,
+    HORIZON,
+    MCTS_ITERATIONS,
+)
 
 reward_config = RewardConfiguration()
 
@@ -38,10 +46,15 @@ def run_episode(env, policy, horizon=100):
     return metrics, total_reward
 
 
-def run_experiment(num_episodes=20, horizon=100, mcts_iterations=100):
-    #comp btwn greedy and mcts
+def run_experiment(num_episodes=EPISODES, horizon=HORIZON, mcts_iterations=MCTS_ITERATIONS):
+    # comp btwn greedy and mcts
 
-    env = Environment(grid_size=10, num_taxis=5, request_rate=2.0, cancellation_prob=0.2)
+    env = Environment(
+        grid_size=GRID_SIZE,
+        num_taxis=NUM_TAXIS,
+        request_rate=REQUEST_RATE,
+        cancellation_prob=CANCELLATION_PROB,
+    )
 
     greedy_config = GreedyConfiguration()
     greedy_policy = GreedyPolicy(greedy_config, env)
@@ -58,7 +71,6 @@ def run_experiment(num_episodes=20, horizon=100, mcts_iterations=100):
     print("-" * 30)
 
     for i in range(num_episodes):
-        # Reset request counter for fair comparison
         env.request_counter = 0
         metrics_m, mcts_r = run_episode(env, mcts_policy, horizon)
         
@@ -70,8 +82,10 @@ def run_experiment(num_episodes=20, horizon=100, mcts_iterations=100):
         mcts_metrics.append(metrics_m)
         greedy_metrics.append(metrics_g)
 
-        print(f"Episode {i+1} | MCTS: {mcts_r:7.2f} | Greedy: {greedy_r:7.2f} | "
-              f"Diff: {mcts_r - greedy_r:+7.2f}")
+        print(
+            f"Episode {i+1} | MCTS: {mcts_r:7.2f} | Greedy: {greedy_r:7.2f} | "
+            f"Diff: {mcts_r - greedy_r:+7.2f}"
+        )
 
     # Plot results
     plt.figure(figsize=(12, 5))
@@ -88,4 +102,4 @@ def run_experiment(num_episodes=20, horizon=100, mcts_iterations=100):
     plt.show()
 
 
-run_experiment(num_episodes=5, horizon=50, mcts_iterations=50) #changed for quicker runs, amend as needed
+run_experiment(num_episodes=EPISODES, horizon=HORIZON, mcts_iterations=MCTS_ITERATIONS)
