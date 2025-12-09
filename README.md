@@ -197,7 +197,9 @@ Overall, the system:
 
 We defined a clear problem, specified the MDP components, implemented two planning methods (one approximate lookahead, one baseline heuristic), and demonstrated how they compute decisions and affect system performance in simulation.
 
-**6: How to Reproduce**
+**6: How to Reproduce and Software/Hardware Requirements**
+
+**6.1 How to Reproduce**
 
 1. Clone repository
 2. Change parameters in `settings.py` to your liking
@@ -211,3 +213,18 @@ The main files are:
 * `mcts_policy.py`: MCTS planner
 * `metrics.py`: Performance tracking
 * `experiments.py`: Evaluation framework
+
+**6.2 Software/Hardware Requirements**
+
+Software Requirements:
+* Python 3.10 or later.
+* Any OS that supports Python 3.10+.
+* Python packages (installed via pip install -r requirements.txt):
+  * numpy
+  * matplotlib
+
+Hardware Requirements:
+* Any modern CPU; no GPU is required.
+* At least 4 GB of RAM recommended (our experiments are pretty light-weight).
+* <100 MB free disk space for code + dependencies.
+* With the default settings (EPISODES, HORIZON, and MCTS_ITERATIONS in settings.py), experiments should complete comfortably on a standard laptop. Increasing the number of episodes or MCTS iterations will increase runtime roughly linearly.
