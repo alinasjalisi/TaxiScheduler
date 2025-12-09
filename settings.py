@@ -12,7 +12,7 @@ CANCELLATION_PROB = 0.2
 
 EPISODES = 20      # number of episodes to run
 HORIZON = 50        # steps per episode
-MCTS_ITERATIONS = 50
+MCTS_ITERATIONS = 200
 
 PROFIT_PER_RIDE = 10.0
 TRAVEL_COST_PER_STEP = 0.1
