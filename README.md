@@ -109,6 +109,7 @@ Environment.get_observation(state) returns a dictionary with keys like "taxis", 
 We implemented and compared two dispatch policies; greedy baseline policy and Monte Carlo Tree Search (MCTS) policy. Both act on the current state and output a joint action (one Action per taxi). We also designed a reward function and metrics to evaluate performance.
 
 **4.1 Reward Function**
+
 The reward at each time step is:
 * Positive
   * + profit_per_ride for each completed ride
