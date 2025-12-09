@@ -1,2 +1,13 @@
+# Software Requirements
+# ----------------------
+# Python: 3.10 or later
+# OS: Any OS with Python 3.10+
+# Required Python packages (install with: pip install -r requirements.txt)
 numpy
 matplotlib
+
+# Hardware Requirements
+# ----------------------
+# CPU: Any modern CPU (no GPU required)
+# RAM: At least 4 GB recommended (our experiments are pretty light-weight)
+# Disk: <100 MB free space for code + dependencies
