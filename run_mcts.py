@@ -1,5 +1,8 @@
-import numpy as np
+# run_mcts.py
+
 import matplotlib.pyplot as plt
+import random
+import numpy as np
 from environment import Environment
 from reward import RewardConfiguration, computeStepReward
 from greedy_policy import GreedyPolicy, GreedyConfiguration
@@ -48,18 +51,9 @@ def run_episode(env, policy, horizon=100):
 
 def run_experiment(num_episodes=EPISODES, horizon=HORIZON, mcts_iterations=MCTS_ITERATIONS):
     # comp btwn greedy and mcts
-
-    env = Environment(
-        grid_size=GRID_SIZE,
-        num_taxis=NUM_TAXIS,
-        request_rate=REQUEST_RATE,
-        cancellation_prob=CANCELLATION_PROB,
-    )
-
+    
     greedy_config = GreedyConfiguration()
-    greedy_policy = GreedyPolicy(greedy_config, env)
-    mcts_policy = MCTSPolicy(env, iterations=mcts_iterations)
-
+    
     mcts_rewards = []
     greedy_rewards = []
     mcts_metrics = []
@@ -71,11 +65,24 @@ def run_experiment(num_episodes=EPISODES, horizon=HORIZON, mcts_iterations=MCTS_
     print("-" * 30)
 
     for i in range(num_episodes):
-        env.request_counter = 0
-        metrics_m, mcts_r = run_episode(env, mcts_policy, horizon)
+       
+        env_mcts = Environment(
+            grid_size=GRID_SIZE,
+            num_taxis=NUM_TAXIS,
+            request_rate=REQUEST_RATE,
+            cancellation_prob=CANCELLATION_PROB,
+        )
+        mcts_policy = MCTSPolicy(env_mcts, iterations=mcts_iterations)
+        metrics_m, mcts_r = run_episode(env_mcts, mcts_policy, horizon)
         
-        env.request_counter = 0
-        metrics_g, greedy_r = run_episode(env, greedy_policy, horizon)
+        env_greedy = Environment(
+            grid_size=GRID_SIZE,
+            num_taxis=NUM_TAXIS,
+            request_rate=REQUEST_RATE,
+            cancellation_prob=CANCELLATION_PROB,
+        )
+        greedy_policy = GreedyPolicy(greedy_config, env_greedy)
+        metrics_g, greedy_r = run_episode(env_greedy, greedy_policy, horizon)
 
         mcts_rewards.append(mcts_r)
         greedy_rewards.append(greedy_r)
@@ -83,13 +90,20 @@ def run_experiment(num_episodes=EPISODES, horizon=HORIZON, mcts_iterations=MCTS_
         greedy_metrics.append(metrics_g)
 
         print(
-            f"Episode {i+1} | MCTS: {mcts_r:7.2f} | Greedy: {greedy_r:7.2f} | "
+            f"Episode {i+1:2d} | MCTS: {mcts_r:7.2f} | Greedy: {greedy_r:7.2f} | "
             f"Diff: {mcts_r - greedy_r:+7.2f}"
         )
-
-    # Plot results
-    plt.figure(figsize=(12, 5))
     
+    # summary 
+    print("\n" + "-"*30)
+    print("SUMMARY STATISTICS")
+    print("-"* 30)
+    print(f"MCTS   Mean: {np.mean(mcts_rewards):7.2f} ± {np.std(mcts_rewards):6.2f}")
+    print(f"Greedy Mean: {np.mean(greedy_rewards):7.2f} ± {np.std(greedy_rewards):6.2f}")
+    print(f"Difference:  {np.mean(mcts_rewards) - np.mean(greedy_rewards):+7.2f}")
+
+    plt.figure(figsize=(12, 5))
+        
     plt.subplot(1, 2, 1)
     plt.plot(mcts_rewards, label="MCTS", marker='o')
     plt.plot(greedy_rewards, label="Greedy", marker='s')
@@ -100,6 +114,5 @@ def run_experiment(num_episodes=EPISODES, horizon=HORIZON, mcts_iterations=MCTS_
     plt.grid(True)
     plt.tight_layout()
     plt.show()
-
 
 run_experiment(num_episodes=EPISODES, horizon=HORIZON, mcts_iterations=MCTS_ITERATIONS)
