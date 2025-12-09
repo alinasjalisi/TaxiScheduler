@@ -17,9 +17,9 @@ We treat this as a planning / decision-making problem under uncertainty; given t
 **2. Related Solutions to Similar Problems**
 
 Real-world ride-hailing platforms (e.g. taxi fleets, Uber/Lyft style systems) face very similar dispatch problems. Common approaches include:
-* Dynamic trip-vehicle assignment: Link
-* MPC for AMoD/ride-hailing: Link
-* Large-scale RL dispatch: Link
+* Dynamic trip-vehicle assignment: [Link](https://www.pnas.org/doi/10.1073/pnas.1611675114?)
+* MPC for AMoD/ride-hailing: [Link](https://dl.acm.org/doi/10.1109/ICRA.2016.7487272?)
+* Large-scale RL dispatch: [Link](https://dl.acm.org/doi/10.1145/3219819.3219824?)
 
 **3. State Space, Actions, Transitions, and Observations**
 
