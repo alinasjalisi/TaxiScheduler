@@ -56,6 +56,7 @@ At each time step, the policy outputs a list of Action objects; one action per t
   * destination = request.origin
   * remaining_travel_time to the Manhattan distance to the origin
 * Action(taxi_id, "move", target=position) - for an idle taxi, start repositioning toward some target cell on the grid.
+
 We restrict candidate actions in our planners to keep the branching factor manageable:
 * Greedy policy: only "idle" or "assign" to existing requests.
 * MCTS: one base “all idle” joint action, plus alternatives where a single idle taxi is assigned to a specific request.
@@ -149,10 +150,10 @@ The following are key components:
   * This keeps the branching factor manageable while still exploring meaningful assignments.
 * Simulation routine (_run_simulation) - for each simulation:
   * Selection - from the root, follow child nodes using:
-$$
-		 			Q(s,a) / N(s,a)+ c sqrt(logN(s) / N(s,a))
-$$
-    where r is average reward, N is parent visits, n is child visits, and c is an exploration parameter.
+
+    $\frac{\text{total reward}}{\text{visits}} + c \sqrt{\frac{\ln (N_{\text{parent}})}{N_{\text{child}}}}$
+
+    where c is an exploration parameter.
   * Expansion - when a leaf node is expanded, the algorithm generates all legal joint actions for that state. For each joint action, it simulates one environment step using Environment.step, creates a child node corresponding to the resulting next state, and adds it as a child of the leaf node.
   * Rollout - from the expanded node, simulate additional random actions up to a fixed depth. Rollouts accumulate an approximate reward signal using an environment-based reward.
   * Backpropagation - propagate the total return back up the tree, updating visits and total_reward for each ancestor node.
